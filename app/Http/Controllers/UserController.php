@@ -55,6 +55,15 @@ class UserController extends Controller
                 if ($check == 1) {
                     $return['status'] = true;
                     $return['message'] = "Login success";
+                    $user_id = $result[0]->user_id;
+                    $credentials = request(['email', 'password']);
+                    if (!$token = auth()->attempt($credentials)) {
+                        $return['status'] = false;
+                        $return['message'] = "Unauthorized";
+                    }
+                    $respond = $this->respondWithToken($token);
+                    $return['token'] = $respond->original['access_token'];
+                    // $email = JWT::decode($respond['access_token']);
                 } else {
                     $return['status'] = false;
                     $return['message'] = "Wrong password";
@@ -66,5 +75,36 @@ class UserController extends Controller
         }
 
         echo json_encode($return);
+    }
+
+    public function getProfile()
+    {
+        $me = $this->me();
+
+        if (isset($me->original['user_id'])) {
+            $return['status'] = true;
+            $return['message'] = "Authorized";
+            $return['data'] = $me;
+        } else {
+            $return['status'] = false;
+            $return['message'] = "Unauthorized";
+            $return['data'] = "";
+        }
+
+        echo json_encode($return);
+    }
+
+    public function me()
+    {
+        return response()->json(auth()->user());
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60
+        ]);
     }
 }
