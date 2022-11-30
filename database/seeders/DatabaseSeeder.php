@@ -13,6 +13,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call([
+            GenreSeeder::class,
+            TagSeeder::class,
+            UserSeeder::class,
+            VideoGenreSeeder::class,
+            VideoSeeder::class,
+            VideoTagSeeder::class
+        ]);
         // $this->call('UsersTableSeeder');
     }
 }
